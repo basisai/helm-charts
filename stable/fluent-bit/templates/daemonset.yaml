@@ -97,9 +97,14 @@ spec:
           mountPath: /fluent-bit/etc/parsers_custom.conf
           subPath: parsers.conf
 {{- end }}
+{{- if and .Values.backend.type "stackdriver" .Values.backend.stackdriver.google_service_credentials }}
+        - name: fluentbit-secret
+          mountPath: /secure/google_service_credentials.json
+          subPath: google_service_credentials.json
+{{- end }}
 {{- end }}
 {{- if .Values.backend.es.tls_ca }}
-        - name: es-tls-secret
+        - name: fluentbit-secret
           mountPath: /secure/es-tls-ca.crt
           subPath: es-tls-ca.crt
 {{- end }}
@@ -141,11 +146,9 @@ spec:
           path: /etc/machine-id
           type: File
     {{- end }}
-{{- if .Values.backend.es.tls_ca }}
-      - name: es-tls-secret
+      - name: fluentbit-secret
         secret:
-          secretName: "{{ template "fluent-bit.fullname" . }}-es-tls-secret"
-{{- end }}
+          secretName: "{{ template "fluent-bit.fullname" . }}-secret"
 {{- if .Values.trackOffsets }}
       - name: tail-db
         hostPath:
